@@ -13,11 +13,11 @@ function[varargout]=sr1_analyze(what,varargin)
 %                       D=sr1_analyze('repetitionEffect','s01',4);          %single subject analysis: repetition effect in subject s01 (collapsing repNum>=4)
 %                       sr1_analyze('pointsAnalysis');                      %proportion of points/errors (effect of thresholds) per block number,subject and group
 %
-%                       sr1_analyze('repEff_ET');
-%                       sr1_analyze('repEff_RT');
-%                       sr1_analyze('repDiff');
-%                       sr1_analyze('repCorr');
-%                       sr1_analyze('repSff');
+%                       D=sr1_analyze('repEff_ET');
+%                       D=sr1_analyze('repEff_RT');
+%                       D=sr1_analyze('repDiff');
+%                       D=sr1_analyze('repCorr');
+%                       D=sr1_analyze('repSff');
 % --
 % gariani@uwo.ca - 2017.07.17
 
@@ -26,22 +26,16 @@ pathToData='/Users/gariani/Documents/data/SequenceRepetition/sr1';
 pathToAnalyze='/Users/gariani/Documents/data/SequenceRepetition/sr1/analyze';
 
 %% globals
-% subj={'s01','s02','s03','s05','s06','s07','s08','s09','s10',...
-%     's11','s13','s14','s15','s16','s17','s18','s19','s20'}; %'s04' is the experimenter, 's12' was excluded due to not following instructions
-% subj={'s01','s02','s03','s04','s05','s06','s07','s08','s09','s10',...
-%     's11','s13','s14','s15','s16','s17','s18','s19','s20'}; %'s04' is the experimenter, 's12' was excluded due to not following instructions
-% subj={'s01','s02','s03','s05','s06','s07','s08','s09','s10',...
-%     's11','s13','s14','s15','s16','s18','s19','s20'}; %'s04' is the experimenter, 's12' was excluded due to not following instructions
-subj={'s01','s02','s03','s04','s05','s06','s07','s08','s09','s10',...
-    's11','s13','s14','s15','s16','s18','s19','s20'}; %'s04' is the experimenter, 's12' was excluded due to not following instructions
+subj={'s01','s02','s03','s05','s06','s07','s08','s09','s10',...
+    's11','s13','s14','s15','s16','s17','s18','s19','s20'}; %'s04' is the experimenter, 's12' was excluded due to not following instructions
 ns = numel(subj);
 subvec = zeros(1,ns);
 for i = 1:ns; subvec(1,i) = str2double(subj{i}(2:3)); end
 
 % plot defaults
 fs = 20; %default font size for all figures
-lw = 3; %4; %default line width for all figures
-ms = 8; %10; %12; %default marker size for all figures
+lw = 4; %4; %default line width for all figures
+ms = 10; %10; %12; %default marker size for all figures
 rs = 0;%0:4; %[0,1,2,3,4]; %default repetition number subset (full range = 0:4; 0 = full set)
 maxRep = 0; %3; % default ceiling level for repetition number (0 = no ceiling)
 
@@ -255,6 +249,7 @@ switch (what)
                 subplot(3,4,[11,12]); title('ER First - ER Rest');
                 lineplot(D6.BN,D6.ERfirst-D6.ERrest,'errorbars','shade','shadecolor',[.5 .5 .5],'linewidth',lw,'linecolor',[.5 .5 .5],'leg',lr,'leglocation','northeast'); drawline(0,'dir','horz','linewidth',lw,'linestyle','--');
                 xlabel('Block number'); ylabel('ER diff (%)'); set(gca,'fontsize',fs); drawline(12.5,'dir','vert','linewidth',10,'color',[1 1 1]); drawline(12.5,'dir','vert','linewidth',lw);
+                
                 % out
                 D.D1=D1; D.D2=D2; D.D3=D3; D.D4=D4; D.D5=D5; D.D6=D6; %incorporate the sub-structures as fields of main structure
                 varargout={D}; %return main structure for this subject
@@ -398,6 +393,7 @@ switch (what)
             lineplot(D9.BN,D9.mRT,'errorbars','shade','shadecolor',[.7 .7 .7],'linewidth',lw,'linecolor',[.7 .7 .7],'leg',{'RT'}); hold on;
             drawline(12.5,'dir','vert','linewidth',28,'color',[1 1 1]); drawline(12.5,'dir','vert','linewidth',lw);
             xlabel('Block number'); ylabel('Mean MT | RT (ms)'); set(gca,'fontsize',fs);
+            
             % out
             D.D1=D1; D.D2=D2; D.D3=D3; D.D4=D4; D.D5=D5; D.D6=D6; D.D7=D7; D.D8=D8; D.D9=D9; %incorporate the sub-structures as fields of main structure
             varargout={D}; %return main structure
@@ -454,7 +450,7 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repEff create summary table
         T = tapply(D, {'SN', 'day', 'isRep'}, ...
-            {D.ET, 'nanmean', 'name', 'ET'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
             'subset', D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
@@ -482,13 +478,14 @@ switch (what)
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % stats
-        %ttest(T.ET(T.isRep==0), T.ET(T.isRep==1), 2, 'paired');
+        ttest(T.ET(T.isRep==1 & T.day==1), T.ET(T.isRep==2 & T.day==1), 2, 'paired');
+        ttest(T.ET(T.isRep==1 & T.day==2), T.ET(T.isRep==2 & T.day==2), 2, 'paired');
         
         % -------------------------------------------------------------------------------------------------------------------------------------
         % Rep num create summary table
         if maxRep > 0; D.repNum(D.repNum >= maxRep) = maxRep; end % put a ceiling to nReps
         T = tapply(D, {'SN', 'repNum'}, ...
-            {D.ET, 'nanmean', 'name', 'ET'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
             'subset', D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
@@ -510,6 +507,42 @@ switch (what)
         labels{1, end} = sprintf('%s', labels{1, end}); xticklabels(labels);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
+        nq = 11; % number of quantiles
+        [D.I,D.M,~] = split_data(D.ET, 'split',[D.SN D.isRep], 'numquant',nq, 'subset',D.isError==0);
+        T = tapply(D, {'SN', 'I', 'isRep'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            'subset',D.isError==0);
+        
+        % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'ET'}, 'sub');
+        
+        subplot(2,2,3); title(''); hold on;
+        plt.line(T.I, T.normET, 'split',T.isRep, 'style',isrepsty, 'leg',isrepleg, 'leglocation','northwest');
+        xticklabels(linspace(0,100,nq));
+        xlabel('ET percentile (%)'); ylabel('ET (ms)');  set(gca,'fontsize',fs); axis square;
+        xlim([0.5 nq+0.5]);
+        ylim([380 1140]);
+        drawline(round(nq/2), 'dir','vert', 'linestyle','--');
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        [D.I,D.M,~] = split_data(D.ET, 'split',[D.SN D.isRep], 'numquant',nq, 'subset',D.isError==0);
+        T = tapply(D, {'SN', 'I'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            {D.ET, 'nanmedian', 'name', 'ETs', 'subset',D.isRep==0}, ...
+            {D.ET, 'nanmedian', 'name', 'ETr', 'subset',D.isRep==1}, ...
+            'subset',D.isError==0);
+        
+        % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'ETs', 'ETr', 'ET'}, 'sub');
+        
+        subplot(2,2,4); title(''); hold on;
+        plt.line(T.I, (nanplus(T.normETs,-T.normETr)./T.normET)*100, 'style',darkgraysty);
+        xticklabels(linspace(0,100,nq));
+        xlabel('ET percentile (%)'); ylabel('Repetition difference (% of ET)');  set(gca,'fontsize',fs); axis square;
+        xlim([0.5 nq+0.5]);
+        drawline(round(nq/2), 'dir','vert', 'linestyle','--');
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
         % out
         D.T=T; %incorporate the sub-structures as fields of main structure
         varargout={D}; %return main structure
@@ -528,13 +561,13 @@ switch (what)
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % open figure
-        %if nargin>1; figure('Name',sprintf('Repetition effect - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('Repetition effect - group (N=%d)',ns)); end
-        %set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
+        if nargin>1; figure('Name',sprintf('Repetition effect - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('Repetition effect - group (N=%d)',ns)); end
+        set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repEff create summary table
         T = tapply(D, {'SN', 'day', 'isRep'}, ...
-            {D.RT, 'nanmean', 'name', 'RT'}, ...
+            {D.RT, 'nanmedian', 'name', 'RT'}, ...
             'subset', D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
@@ -547,7 +580,7 @@ switch (what)
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repEff box plot
-        subplot(2,2,3); title('Repetition Effect'); hold on;
+        subplot(2,2,1); title('Repetition Effect'); hold on;
         plt.box(T.day, T.normRT, 'split',T.isRep, 'style',isrepstybox, 'leg',isrepleg, 'leglocation','northeast');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
@@ -562,13 +595,14 @@ switch (what)
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % stats
-        %ttest(T.RT(T.isRep==0), T.RT(T.isRep==1), 2, 'paired');
+        ttest(T.RT(T.isRep==1 & T.day==1), T.RT(T.isRep==2 & T.day==1), 2, 'paired');
+        ttest(T.RT(T.isRep==1 & T.day==2), T.RT(T.isRep==2 & T.day==2), 2, 'paired');
         
         % -------------------------------------------------------------------------------------------------------------------------------------
         % Rep num create summary table
         if maxRep > 0; D.repNum(D.repNum >= maxRep) = maxRep; end % put a ceiling to nReps
         T = tapply(D, {'SN', 'repNum'}, ...
-            {D.RT, 'nanmean', 'name', 'RT'}, ...
+            {D.RT, 'nanmedian', 'name', 'RT'}, ...
             'subset', D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
@@ -581,13 +615,49 @@ switch (what)
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % Rep num line plot
-        subplot(2,2,4); title('Repetition number');
+        subplot(2,2,2); title('Repetition number');
         [~,~] = plt.line(T.repNum, T.normRT, 'errorbars','shade', 'style',darkgraysty, 'leg','skip',  'leglocation','northeast');
         xlabel('Repetition number'); ylabel('RT (ms)'); set(gca,'fontsize',fs); axis square;
         %ylim([690 810]);
         labels = cell(1, max(D.repNum)+1); labels{1, 1} = 'Switch';
         for l = 1 : max(D.repNum); labels{1, l+1} = num2str(l); end
         labels{1, end} = sprintf('%s', labels{1, end}); xticklabels(labels);
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        nq = 11; % number of quantiles
+        [D.I,D.M,~] = split_data(D.ET, 'split',[D.SN D.isRep], 'numquant',nq, 'subset',D.isError==0);
+        T = tapply(D, {'SN', 'I', 'isRep'}, ...
+            {D.RT, 'nanmedian', 'name', 'RT'}, ...
+            'subset',D.isError==0);
+        
+        % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'RT'}, 'sub');
+        
+        subplot(2,2,3); title(''); hold on;
+        plt.line(T.I, T.normRT, 'split',T.isRep, 'style',isrepsty, 'leg',isrepleg, 'leglocation','northwest');
+        xticklabels(linspace(0,100,nq));
+        xlabel('RT percentile (%)'); ylabel('RT (ms)');  set(gca,'fontsize',fs); axis square;
+        xlim([0.5 nq+0.5]);
+        ylim([351 551]);
+        drawline(round(nq/2), 'dir','vert', 'linestyle','--');
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        [D.I,D.M,~] = split_data(D.RT, 'split',[D.SN D.isRep], 'numquant',nq, 'subset',D.isError==0);
+        T = tapply(D, {'SN', 'I'}, ...
+            {D.RT, 'nanmedian', 'name', 'RT'}, ...
+            {D.RT, 'nanmedian', 'name', 'RTs', 'subset',D.isRep==0}, ...
+            {D.RT, 'nanmedian', 'name', 'RTr', 'subset',D.isRep==1}, ...
+            'subset',D.isError==0);
+        
+        % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'RTs', 'RTr', 'RT'}, 'sub');
+        
+        subplot(2,2,4); title(''); hold on;
+        plt.line(T.I, (nanplus(T.normRTs,-T.normRTr)./T.normRT)*100, 'style',darkgraysty);
+        xticklabels(linspace(0,100,nq));
+        xlabel('RT percentile (%)'); ylabel('Repetition difference (% of RT)');  set(gca,'fontsize',fs); axis square;
+        xlim([0.5 nq+0.5]);
+        drawline(round(nq/2), 'dir','vert', 'linestyle','--');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % out
@@ -614,8 +684,8 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repDiff create summary table
         T = tapply(D, {'SN', 'BN', 'day', 'isRep'}, ...
-            {D.ET, 'nanmean', 'name', 'ET'}, ...
-            {D.RT, 'nanmean', 'name', 'RT'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            {D.RT, 'nanmedian', 'name', 'RT'}, ...
             'subset', D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
@@ -627,22 +697,22 @@ switch (what)
         subplot(2,2,1); title(''); hold on;
         plt.line([T.day T.BN], T.normET, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
         ylabel('Execution time (ms)'); set(gca,'fontsize',fs); axis square;
-        xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); ylim([520 1070]);
+        xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); ylim([480 1020]);
         drawline(9.2, 'dir','vert', 'linestyle',':');
         
         subplot(2,2,3); title(''); hold on;
         plt.line([T.day T.BN], T.normRT, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
-        ylabel('Reaction time (ms)'); set(gca,'fontsize',fs); axis square;         
-        xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg);  ylim([350 625]);
+        ylabel('Reaction time (ms)'); set(gca,'fontsize',fs); axis square;
+        xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg);  ylim([340 610]);
         drawline(9.2, 'dir','vert', 'linestyle',':');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repDiff create summary table
         T = tapply(D, {'SN', 'BN', 'day'}, ...
-            {D.ET, 'nanmean', 'name', 'ETswc', 'subset',D.isRep==0}, ...
-            {D.ET, 'nanmean', 'name', 'ETrep', 'subset',D.isRep==1}, ...
-            {D.RT, 'nanmean', 'name', 'RTswc', 'subset',D.isRep==0}, ...
-            {D.RT, 'nanmean', 'name', 'RTrep', 'subset',D.isRep==1}, ...
+            {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
+            {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
+            {D.RT, 'nanmedian', 'name', 'RTswc', 'subset',D.isRep==0}, ...
+            {D.RT, 'nanmedian', 'name', 'RTrep', 'subset',D.isRep==1}, ...
             'subset', D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
@@ -651,16 +721,16 @@ switch (what)
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % Diff line plot
-        subplot(2,2,2); 
+        subplot(2,2,2);
         plt.line([T.day T.BN], T.normETswc-T.normETrep, 'split',[], 'style',graysty, 'leg','skip', 'leglocation','northeast');
         ylabel('Repetition benefit (ms)'); set(gca,'fontsize',fs); axis square;
-        xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); ylim([-25 70]);
+        xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); %ylim([-25 70]);
         drawline(0, 'dir','horz', 'linestyle','--', 'linewidth',lw); drawline(9.2, 'dir','vert', 'linestyle',':');
-         
-        subplot(2,2,4); 
+        
+        subplot(2,2,4);
         plt.line([T.day T.BN], T.normRTswc-T.normRTrep, 'split',[], 'style',graysty, 'leg','skip', 'leglocation','northeast');
         ylabel('Repetition benefit (ms)'); set(gca,'fontsize',fs); axis square;
-        xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); ylim([-20 160]);
+        xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); %ylim([-20 160]);
         drawline(0, 'dir','horz', 'linestyle','--', 'linewidth',lw); drawline(9.2, 'dir','vert', 'linestyle',':');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
@@ -692,12 +762,12 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repDiff create summary table
         T = tapply(D, {'SN', 'day'}, ...
-            {D.ET, 'nanmean', 'name', 'ETswc', 'subset',D.isRep==0}, ...
-            {D.ET, 'nanmean', 'name', 'ETrep', 'subset',D.isRep==1}, ...
-            {D.RT, 'nanmean', 'name', 'RTswc', 'subset',D.isRep==0}, ...
-            {D.RT, 'nanmean', 'name', 'RTrep', 'subset',D.isRep==1}, ...
-            {D.ET, 'nanmean', 'name', 'ET'}, ...
-            {D.RT, 'nanmean', 'name', 'RT'}, ...
+            {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
+            {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
+            {D.RT, 'nanmedian', 'name', 'RTswc', 'subset',D.isRep==0}, ...
+            {D.RT, 'nanmedian', 'name', 'RTrep', 'subset',D.isRep==1}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            {D.RT, 'nanmedian', 'name', 'RT'}, ...
             'subset', D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
@@ -745,8 +815,8 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repDiff create summary table
         T = tapply(D, {'SN', 'day', 'sff'}, ...
-            {D.ET, 'nanmean', 'name', 'ET'}, ...
-            {D.RT, 'nanmean', 'name', 'RT'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            {D.RT, 'nanmedian', 'name', 'RT'}, ...
             'subset', D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
