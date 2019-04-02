@@ -709,27 +709,29 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repDiff create summary table
         T = tapply(D, {'SN', 'BN', 'day'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
             {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
+            {D.RT, 'nanmedian', 'name', 'RT'}, ...
             {D.RT, 'nanmedian', 'name', 'RTswc', 'subset',D.isRep==0}, ...
             {D.RT, 'nanmedian', 'name', 'RTrep', 'subset',D.isRep==1}, ...
             'subset', D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
-        T = normData(T, {'ETswc', 'ETrep', 'RTswc', 'RTrep'}, 'sub');
+        T = normData(T, {'ET', 'ETswc', 'ETrep', 'RT', 'RTswc', 'RTrep'}, 'sub');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % Diff line plot
         subplot(2,2,2);
-        plt.line([T.day T.BN], T.normETswc-T.normETrep, 'split',[], 'style',graysty, 'leg','skip', 'leglocation','northeast');
-        ylabel('Repetition benefit (ms)'); set(gca,'fontsize',fs); axis square;
+        plt.line([T.day T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[], 'style',graysty, 'leg','skip', 'leglocation','northeast');
+        ylabel('Repetition benefit (% of ET)'); set(gca,'fontsize',fs); axis square;
         xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); %ylim([-25 70]);
         drawline(0, 'dir','horz', 'linestyle','--', 'linewidth',lw); drawline(9.2, 'dir','vert', 'linestyle',':');
         
         subplot(2,2,4);
-        plt.line([T.day T.BN], T.normRTswc-T.normRTrep, 'split',[], 'style',graysty, 'leg','skip', 'leglocation','northeast');
-        ylabel('Repetition benefit (ms)'); set(gca,'fontsize',fs); axis square;
+        plt.line([T.day T.BN], ((T.normRTswc-T.normRTrep)./T.normET)*100, 'split',[], 'style',graysty, 'leg','skip', 'leglocation','northeast');
+        ylabel('Repetition benefit (% of RT)'); set(gca,'fontsize',fs); axis square;
         xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); %ylim([-20 160]);
         drawline(0, 'dir','horz', 'linestyle','--', 'linewidth',lw); drawline(9.2, 'dir','vert', 'linestyle',':');
         
