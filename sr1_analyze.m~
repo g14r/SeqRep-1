@@ -686,7 +686,7 @@ switch (what)
         T = tapply(D, {'SN', 'BN', 'day', 'isRep'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.RT, 'nanmedian', 'name', 'RT'}, ...
-            'subset', D.isError==0);
+            'subset', D.isError==0 & D.res);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
@@ -695,7 +695,7 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repEff line plot
         subplot(2,2,3); title(''); hold on;
-        plt.line([T.day T.BN], T.ET, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
+        plt.line([T.day T.BN], T.normET, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
         xlabel('Block number'); ylabel('Execution time (ms)'); set(gca,'fontsize',fs); axis square;
         %xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); 
         ylim([480 1020]);
