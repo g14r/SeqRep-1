@@ -736,12 +736,15 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % Diff line plot
         subplot(2,2,4);
-        plt.line([T.day T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'style',graysty, 'leg','skip', 'leglocation','northeast');
+        %plt.line([T.day T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'style',graysty, 'leg','skip', 'leglocation','northeast');
+        %plt.scatter([T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',T.day, 'leg','skip', 'leglocation','northeast');
+        %plt.scatter([T.BN], T.ETswc-T.ETrep, 'split',T.day, 'style',isrepsty, 'leg','skip', 'leglocation','northeast');
+        plt.scatter([T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',T.day, 'style',isrepsty, 'leg','skip', 'leglocation','northeast');
         %plt.line([T.day T.BN], (T.ETswc-T.ETrep), 'style',graysty, 'leg','skip', 'leglocation','northeast');
         xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square;
         %xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); 
-        ylim([-2 8]); %ylim([-15 65]);
-        drawline(0, 'dir','horz', 'linestyle','--'); drawline(9.2, 'dir','vert', 'linestyle',':');
+        %ylim([-2 8]); %ylim([-15 65]);
+        drawline(0, 'dir','horz', 'linestyle','--'); %drawline(9.2, 'dir','vert', 'linestyle',':');
         
         T = tapply(D, {'SN', 'BN'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
