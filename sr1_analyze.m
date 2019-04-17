@@ -69,7 +69,7 @@ style.custom({blue,lightblue,red,lightred,orange,yellow,lightyellow,purple,light
     cbs_red,cbs_yellow,cbs_blue,cbs_green,cbs_pink});
 isrepsty = style.custom({lightgray, darkgray}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
 lightgraysty = style.custom({lightgray}, 'markertype','none', 'linewidth',1);
-graysty = style.custom({gray}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
+graysty = style.custom({lightgray}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
 darkgraysty = style.custom({darkgray}, 'markersize',ms, 'linewidth',lw, 'errorbars','shade');
 blacksty = style.custom({black}, 'markertype','none', 'linewidth',lw, 'linestyle','--','errorbars','plusminus', 'errorwidth',lw, 'errorcap',0);%, 'linestyle','none');
 %sffsty = style.custom({lightgray, gray, darkgray}, 'markersize',ms, 'linewidth',lw);
@@ -699,7 +699,8 @@ switch (what)
         xlabel('Block number'); ylabel('Execution time (ms)'); set(gca,'fontsize',fs); axis square;
         %xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); 
         ylim([480 1020]);
-        drawline(9.2, 'dir','vert', 'linestyle',':');
+        %drawline(9.2, 'dir','vert', 'linestyle',':');
+        drawline(12.5, 'dir','vert', 'linestyle',':');
         
         % stats
         ttest(T.ET(T.BN==1 & T.isRep==0), T.ET(T.BN==1 & T.isRep==1), 2, 'paired');
@@ -736,15 +737,17 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % Diff line plot
         subplot(2,2,4);
-        %plt.line([T.day T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'style',graysty, 'leg','skip', 'leglocation','northeast');
         %plt.scatter([T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',T.day, 'leg','skip', 'leglocation','northeast');
         %plt.scatter([T.BN], T.ETswc-T.ETrep, 'split',T.day, 'style',isrepsty, 'leg','skip', 'leglocation','northeast');
-        plt.scatter([T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',T.day, 'style',isrepsty, 'leg','skip', 'leglocation','northeast');
+        plt.line([T.day T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'style',graysty, 'leg','skip', 'leglocation','northeast');
+        hold on;
+        plt.scatter([T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',T.day, 'style',blacksty, 'leg','skip', 'leglocation','northeast');
         %plt.line([T.day T.BN], (T.ETswc-T.ETrep), 'style',graysty, 'leg','skip', 'leglocation','northeast');
         xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square;
         %xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); 
-        %ylim([-2 8]); %ylim([-15 65]);
+        ylim([-2 8]); %ylim([-15 65]);
         drawline(0, 'dir','horz', 'linestyle','--'); %drawline(9.2, 'dir','vert', 'linestyle',':');
+        drawline(12.5, 'dir','vert', 'linestyle',':');
         
         T = tapply(D, {'SN', 'BN'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
