@@ -27,8 +27,8 @@ pathToAnalyze='/Users/gariani/Documents/data/SequenceRepetition/sr1/analyze';
 
 %% globals
 subj={'s01','s02','s03','s04','s05','s06','s07','s08','s09','s10',...
-    's11','s13','s14','s15','s16','s17','s18','s19','s20',...
-    's21','s22','s23','s24'}; %'s04' is the experimenter, 's12' was excluded due to not following instructions
+      's11',      's13','s14','s15','s16','s17','s18','s19','s20',...
+      's21','s22','s23','s24','s25','s26','s27'}; %'s04' is the experimenter, 's12' was excluded due to not following instructions
 ns = numel(subj);
 subvec = zeros(1,ns);
 for i = 1:ns; subvec(1,i) = str2double(subj{i}(2:3)); end
