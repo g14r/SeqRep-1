@@ -28,7 +28,11 @@ pathToAnalyze='/Users/gariani/Documents/data/SequenceRepetition/sr1/analyze';
 %% globals
 subj={'s01','s02','s03','s04','s05','s06','s07','s08','s09','s10',...
       's11',      's13','s14','s15','s16','s17','s18','s19','s20',...
-      's21','s22','s23','s24','s25','s26','s27'}; %'s04' is the experimenter, 's12' was excluded due to not following instructions
+      's21','s22','s23','s24','s25','s26','s27','s28','s29','s30',...
+      's31','s32','s33','s34','s35','s36','s37','s38','s39','s40'};
+% incomplete: 's12' was excluded due to not following instructions (incomplete data)
+% high-error: 's01','s17','s23'
+% really slow: 's01','s19'
 ns = numel(subj);
 subvec = zeros(1,ns);
 for i = 1:ns; subvec(1,i) = str2double(subj{i}(2:3)); end
@@ -38,7 +42,7 @@ fs = 20; %default font size for all figures
 lw = 4; %4; %default line width for all figures
 ms = 10; %10; %12; %default marker size for all figures
 rs = 0;%0:4; %[0,1,2,3,4]; %default repetition number subset (full range = 0:4; 0 = full set)
-maxRep = 0; %3; % default ceiling level for repetition number (0 = no ceiling)
+maxRep = 3; %3; % default ceiling level for repetition number (0 = no ceiling)
 
 % colors
 cbs_red = [213 94 0]/255;
@@ -97,15 +101,15 @@ switch (what)
         end
         
     case 'all_data' % pre-analysis: create .mat file containing data from all subjects
-        all_data=[];
+        all_data = [];
         for s=1:length(subj)
             fprintf('\n%s\n\n',subj{s});
-            D=load(fullfile(pathToData,sprintf('sr1_%s.mat',subj{s}))); %load data structure for each subject
-            D.SN=ones(numel(D.TN),1)*s; %add information about subject number
-            D.day=ones(numel(D.TN),1); D.day(D.BN>12)=2; %add information about day of testing
+            D = load(fullfile(pathToData,sprintf('sr1_%s.mat',subj{s}))); %load data structure for each subject
+            D.SN = ones(numel(D.TN),1)*subvec(s); %add information about subject number
+            D.day = ones(numel(D.TN),1); D.day(D.BN>12)=2; %add information about testing day
             D.repNum = D.repNum-1; % 0 = switch; 1 = first repetition (i.e., sequence repeated twice in a row)
             D.isRep = D.repNum>0;
-            D = getrow(D, D.dummy == 0);
+            D = getrow(D, D.dummy == 0); % remove dummy trials
             D.ET = D.MT;
             
             %-------------------------------------------------------------------------------------------------------------------------------------
@@ -678,9 +682,9 @@ switch (what)
         if numel(rs)>1; D = getrow(D, ismember(D.repNum, rs)); end
         
         %-------------------------------------------------------------------------------------------------------------------------------------
-%         % open figure
-%         if nargin>1; figure('Name',sprintf('Repetition effect - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('Repetition effect - group (N=%d)',ns)); end
-%         set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
+        %         % open figure
+        %if nargin>1; figure('Name',sprintf('Repetition effect - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('Repetition effect - group (N=%d)',ns)); end
+        %set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repDiff create summary table
@@ -696,29 +700,21 @@ switch (what)
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repEff line plot
         subplot(2,2,3); title(''); hold on;
-        plt.line([T.day T.BN], T.ET, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
+        plt.line([T.day T.BN], T.normET, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
         xlabel('Block number'); ylabel('Execution time (ms)'); set(gca,'fontsize',fs); axis square;
-        %xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); 
         ylim([480 1020]);
-        %drawline(9.2, 'dir','vert', 'linestyle',':');
         drawline(12.5, 'dir','vert', 'linestyle',':');
         
         % stats
-        ttest(T.ET(T.BN==1 & T.isRep==0), T.ET(T.BN==1 & T.isRep==1), 2, 'paired');
-        ttest(T.ET(T.BN==2 & T.isRep==0), T.ET(T.BN==2 & T.isRep==1), 2, 'paired');
-        ttest(T.ET(T.BN==3 & T.isRep==0), T.ET(T.BN==3 & T.isRep==1), 2, 'paired');
-        ttest(T.ET(T.BN==4 & T.isRep==0), T.ET(T.BN==4 & T.isRep==1), 2, 'paired');
-        
-        ttest(T.ET(T.BN==13 & T.isRep==0), T.ET(T.BN==13 & T.isRep==1), 2, 'paired');
-        ttest(T.ET(T.BN==14 & T.isRep==0), T.ET(T.BN==14 & T.isRep==1), 2, 'paired');
-        ttest(T.ET(T.BN==15 & T.isRep==0), T.ET(T.BN==15 & T.isRep==1), 2, 'paired');
-        ttest(T.ET(T.BN==16 & T.isRep==0), T.ET(T.BN==16 & T.isRep==1), 2, 'paired');
-        
-%         subplot(2,2,3); title(''); hold on;
-%         plt.line([T.day T.BN], T.normRT, 'split',[T.isRep], 'style',isrepsty, 'leg',isrepleg, 'leglocation','northeast');
-%         ylabel('Reaction time (ms)'); set(gca,'fontsize',fs); axis square;
-%         xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg);  ylim([340 610]);
-%         drawline(9.2, 'dir','vert', 'linestyle',':');
+        %         ttest(T.ET(T.BN==1 & T.isRep==0), T.ET(T.BN==1 & T.isRep==1), 2, 'paired');
+        %         ttest(T.ET(T.BN==2 & T.isRep==0), T.ET(T.BN==2 & T.isRep==1), 2, 'paired');
+        %         ttest(T.ET(T.BN==3 & T.isRep==0), T.ET(T.BN==3 & T.isRep==1), 2, 'paired');
+        %         ttest(T.ET(T.BN==4 & T.isRep==0), T.ET(T.BN==4 & T.isRep==1), 2, 'paired');
+        %
+        %         ttest(T.ET(T.BN==13 & T.isRep==0), T.ET(T.BN==13 & T.isRep==1), 2, 'paired');
+        %         ttest(T.ET(T.BN==14 & T.isRep==0), T.ET(T.BN==14 & T.isRep==1), 2, 'paired');
+        %         ttest(T.ET(T.BN==15 & T.isRep==0), T.ET(T.BN==15 & T.isRep==1), 2, 'paired');
+        %         ttest(T.ET(T.BN==16 & T.isRep==0), T.ET(T.BN==16 & T.isRep==1), 2, 'paired');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % repDiff create summary table
@@ -726,38 +722,37 @@ switch (what)
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
             {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
-            {D.RT, 'nanmedian', 'name', 'RT'}, ...
-            {D.RT, 'nanmedian', 'name', 'RTswc', 'subset',D.isRep==0}, ...
-            {D.RT, 'nanmedian', 'name', 'RTrep', 'subset',D.isRep==1}, ...
             'subset', D.isError==0);
+        %{D.RT, 'nanmedian', 'name', 'RT'}, ...
+            %{D.RT, 'nanmedian', 'name', 'RTswc', 'subset',D.isRep==0}, ...
+            %{D.RT, 'nanmedian', 'name', 'RTrep', 'subset',D.isRep==1}, ...
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
-        T = normData(T, {'ET', 'ETswc', 'ETrep', 'RT', 'RTswc', 'RTrep'}, 'sub');
+        %T = normData(T, {'ET', 'ETswc', 'ETrep', 'RT', 'RTswc', 'RTrep'}, 'sub');
+        T = normData(T, {'ET', 'ETswc', 'ETrep'}, 'sub');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % Diff line plot
         subplot(2,2,4);
-        %plt.scatter([T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',T.day, 'leg','skip', 'leglocation','northeast');
-        %plt.scatter([T.BN], T.ETswc-T.ETrep, 'split',T.day, 'style',isrepsty, 'leg','skip', 'leglocation','northeast');
-        plt.line([T.day T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'style',graysty, 'leg','skip', 'leglocation','northeast');
+        plt.line([T.day T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'style',graysty, 'leg','skip');
+        %plt.line([T.day T.BN], (T.ETswc-T.ETrep), 'style',graysty, 'leg','skip');
         hold on;
-        plt.scatter([T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',T.day, 'style',blacksty, 'leg','skip', 'leglocation','northeast');
-        %plt.line([T.day T.BN], (T.ETswc-T.ETrep), 'style',graysty, 'leg','skip', 'leglocation','northeast');
+        plt.scatter([T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[T.day], 'style',blacksty, 'leg','skip');
+        %plt.scatter([T.BN], (T.ETswc-T.ETrep), 'split',[T.day], 'style',blacksty, 'leg','skip');
         xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square;
-        %xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); 
-        ylim([-2 8]); %ylim([-15 65]);
-        drawline(0, 'dir','horz', 'linestyle','--'); %drawline(9.2, 'dir','vert', 'linestyle',':');
+        ylim([-2 6]);
+        drawline(0, 'dir','horz', 'linestyle','--');
         drawline(12.5, 'dir','vert', 'linestyle',':');
         
-        T = tapply(D, {'SN', 'BN'}, ...
-            {D.ET, 'nanmedian', 'name', 'ET'}, ...
-            {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
-            {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
-            'subset', D.isError==0);
-        
+        %-------------------------------------------------------------------------------------------------------------------------------------
         % stats
-        ET = ((T.ETswc-T.ETrep)./T.ET)*100; 
+        %         figure; [~,b,~,~]=plt.scatter([T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[T.day T.SN]); close(gcf);
+        %         bDay1 = b(2,1:ns)';
+        %         bDay2 = b(2,ns+1:end)';
+        %         ttest(bDay1, 0, 2, 'onesample');
+        %         ttest(bDay2, 0, 2, 'onesample');
+        ET = ((T.ETswc-T.ETrep)./T.ET)*100;
         ttest(ET(T.BN==1), 0, 2, 'onesample');
         ttest(ET(T.BN==2), 0, 2, 'onesample');
         ttest(ET(T.BN==3), 0, 2, 'onesample');
@@ -767,16 +762,6 @@ switch (what)
         ttest(ET(T.BN==14), 0, 2, 'onesample');
         ttest(ET(T.BN==15), 0, 2, 'onesample');
         ttest(ET(T.BN==16), 0, 2, 'onesample');
-        
-%         subplot(2,2,4);
-%         plt.line([T.day T.BN], ((T.normRTswc-T.normRTrep)./T.normET)*100, 'split',[], 'style',graysty, 'leg','skip', 'leglocation','northeast');
-%         ylabel('Repetition benefit (% of RT)'); set(gca,'fontsize',fs); axis square;
-%         xt = xticks; xticks([xt(6), xt(18)]); xticklabels(dayleg); %ylim([-20 160]);
-%         drawline(0, 'dir','horz', 'linestyle','--', 'linewidth',lw); drawline(9.2, 'dir','vert', 'linestyle',':');
-        
-        %-------------------------------------------------------------------------------------------------------------------------------------
-        % stats
-        %ttest(T.RT(T.isRep==0), T.RT(T.isRep==1), 2, 'paired');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % out
