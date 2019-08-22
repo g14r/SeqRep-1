@@ -741,7 +741,7 @@ switch (what)
         plt.scatter([T.BN], ((T.ETswc-T.ETrep)./T.ET)*100, 'split',[T.day], 'style',blacksty, 'leg','skip');
         %plt.scatter([T.BN], (T.ETswc-T.ETrep), 'split',[T.day], 'style',blacksty, 'leg','skip');
         xlabel('Block number'); ylabel('Repetition difference (% of ET)'); set(gca,'fontsize',fs); axis square;
-        ylim([-2 6]);
+        ylim([-1.5 7.5]);
         drawline(0, 'dir','horz', 'linestyle','--');
         drawline(12.5, 'dir','vert', 'linestyle',':');
         
@@ -752,16 +752,41 @@ switch (what)
         %         bDay2 = b(2,ns+1:end)';
         %         ttest(bDay1, 0, 2, 'onesample');
         %         ttest(bDay2, 0, 2, 'onesample');
-        ET = ((T.ETswc-T.ETrep)./T.ET)*100;
-        ttest(ET(T.BN==1), 0, 2, 'onesample');
-        ttest(ET(T.BN==2), 0, 2, 'onesample');
-        ttest(ET(T.BN==3), 0, 2, 'onesample');
-        ttest(ET(T.BN==4), 0, 2, 'onesample');
+        T2 = tapply(D, {'SN'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
+            {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
+            'subset', D.isError==0 & ismember(D.BN, 1:3));
+        ET = ((T2.ETswc-T2.ETrep)./T2.ET)*100;
+        [T.t1,T.p1]=ttest(ET, 0, 2, 'onesample');
+        %ttest(ET(T.BN==1), 0, 2, 'onesample');
+        %ttest(ET(T.BN==2), 0, 2, 'onesample');
+        %ttest(ET(T.BN==3), 0, 2, 'onesample');
+        T2 = tapply(D, {'SN'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
+            {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
+            'subset', D.isError==0 & ismember(D.BN, 4));
+        ET = ((T2.ETswc-T2.ETrep)./T2.ET)*100;
+        [T.t2,T.p2]=ttest(ET, 0, 2, 'onesample');
         
-        ttest(ET(T.BN==13), 0, 2, 'onesample');
-        ttest(ET(T.BN==14), 0, 2, 'onesample');
-        ttest(ET(T.BN==15), 0, 2, 'onesample');
-        ttest(ET(T.BN==16), 0, 2, 'onesample');
+        T2 = tapply(D, {'SN'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
+            {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
+            'subset', D.isError==0 & ismember(D.BN, 13:15));
+        ET = ((T2.ETswc-T2.ETrep)./T2.ET)*100;
+        [T.t3,T.p3]=ttest(ET, 0, 2, 'onesample');
+        %ttest(ET(T.BN==13), 0, 2, 'onesample');
+        %ttest(ET(T.BN==14), 0, 2, 'onesample');
+        %ttest(ET(T.BN==15), 0, 2, 'onesample');
+        T2 = tapply(D, {'SN'}, ...
+            {D.ET, 'nanmedian', 'name', 'ET'}, ...
+            {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
+            {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
+            'subset', D.isError==0 & ismember(D.BN, 16));
+        ET = ((T2.ETswc-T2.ETrep)./T2.ET)*100;
+        [T.t4,T.p4]=ttest(ET, 0, 2, 'onesample');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % out
