@@ -18,6 +18,8 @@ function[varargout]=sr1_analyze(what,varargin)
 %                       D=sr1_analyze('repDiff');
 %                       D=sr1_analyze('repCorr');
 %                       D=sr1_analyze('repSff');
+%                       D=sr1_analyze('repEff_IPI');
+%
 % --
 % gariani@uwo.ca - 2017.07.17
 
@@ -27,9 +29,9 @@ pathToAnalyze='/Users/gariani/Documents/data/SequenceRepetition/sr1/analyze';
 
 %% globals
 subj={'s01','s02','s03','s04','s05','s06','s07','s08','s09','s10',...
-      's11',      's13','s14','s15','s16','s17','s18','s19','s20',...
-      's21','s22','s23','s24','s25','s26','s27','s28','s29','s30',...
-      's31','s32','s33','s34','s35','s36','s37','s38','s39','s40'};
+    's11',      's13','s14','s15','s16','s17','s18','s19','s20',...
+    's21','s22','s23','s24','s25','s26','s27','s28','s29','s30',...
+    's31','s32','s33','s34','s35','s36','s37','s38','s39','s40'};
 % incomplete: 's12' was excluded due to not following instructions (incomplete data)
 % high-error: 's01','s17','s23'
 % really slow: 's01','s19'
@@ -42,7 +44,7 @@ fs = 20; %default font size for all figures
 lw = 4; %4; %default line width for all figures
 ms = 10; %10; %12; %default marker size for all figures
 rs = 0;%0:4; %[0,1,2,3,4]; %default repetition number subset (full range = 0:4; 0 = full set)
-maxRep = 3; %3; % default ceiling level for repetition number (0 = no ceiling)
+maxRep = 0; %3; % default ceiling level for repetition number (0 = no ceiling)
 
 % colors
 cbs_red = [213 94 0]/255;
@@ -456,7 +458,7 @@ switch (what)
         % repEff create summary table
         T = tapply(D, {'SN', 'day', 'isRep'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
-            'subset', D.isError==0);
+            'subset', D.dummy==0 & D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
@@ -491,7 +493,7 @@ switch (what)
         if maxRep > 0; D.repNum(D.repNum >= maxRep) = maxRep; end % put a ceiling to nReps
         T = tapply(D, {'SN', 'repNum'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
-            'subset', D.isError==0);
+            'subset', D.dummy==0 & D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
@@ -573,7 +575,7 @@ switch (what)
         % repEff create summary table
         T = tapply(D, {'SN', 'day', 'isRep'}, ...
             {D.RT, 'nanmedian', 'name', 'RT'}, ...
-            'subset', D.isError==0);
+            'subset', D.dummy==0 & D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
@@ -608,7 +610,7 @@ switch (what)
         if maxRep > 0; D.repNum(D.repNum >= maxRep) = maxRep; end % put a ceiling to nReps
         T = tapply(D, {'SN', 'repNum'}, ...
             {D.RT, 'nanmedian', 'name', 'RT'}, ...
-            'subset', D.isError==0);
+            'subset', D.dummy==0 & D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
@@ -691,7 +693,7 @@ switch (what)
         T = tapply(D, {'SN', 'BN', 'day', 'isRep'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.RT, 'nanmedian', 'name', 'RT'}, ...
-            'subset', D.isError==0);
+            'subset', D.dummy==0 & D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
@@ -722,10 +724,10 @@ switch (what)
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
             {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
-            'subset', D.isError==0);
+            'subset', D.dummy==0 & D.isError==0);
         %{D.RT, 'nanmedian', 'name', 'RT'}, ...
-            %{D.RT, 'nanmedian', 'name', 'RTswc', 'subset',D.isRep==0}, ...
-            %{D.RT, 'nanmedian', 'name', 'RTrep', 'subset',D.isRep==1}, ...
+        %{D.RT, 'nanmedian', 'name', 'RTswc', 'subset',D.isRep==0}, ...
+        %{D.RT, 'nanmedian', 'name', 'RTrep', 'subset',D.isRep==1}, ...
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
@@ -756,7 +758,7 @@ switch (what)
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
             {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
-            'subset', D.isError==0 & ismember(D.BN, 1:3));
+            'subset', D.dummy==0 & D.isError==0 & ismember(D.BN, 1:3));
         ET = ((T2.ETswc-T2.ETrep)./T2.ET)*100;
         [T.t1,T.p1]=ttest(ET, 0, 2, 'onesample');
         %ttest(ET(T.BN==1), 0, 2, 'onesample');
@@ -766,7 +768,7 @@ switch (what)
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
             {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
-            'subset', D.isError==0 & ismember(D.BN, 4));
+            'subset', D.dummy==0 & D.isError==0 & ismember(D.BN, 4));
         ET = ((T2.ETswc-T2.ETrep)./T2.ET)*100;
         [T.t2,T.p2]=ttest(ET, 0, 2, 'onesample');
         
@@ -774,7 +776,7 @@ switch (what)
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
             {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
-            'subset', D.isError==0 & ismember(D.BN, 13:15));
+            'subset', D.dummy==0 & D.isError==0 & ismember(D.BN, 13:15));
         ET = ((T2.ETswc-T2.ETrep)./T2.ET)*100;
         [T.t3,T.p3]=ttest(ET, 0, 2, 'onesample');
         %ttest(ET(T.BN==13), 0, 2, 'onesample');
@@ -784,7 +786,7 @@ switch (what)
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.ET, 'nanmedian', 'name', 'ETswc', 'subset',D.isRep==0}, ...
             {D.ET, 'nanmedian', 'name', 'ETrep', 'subset',D.isRep==1}, ...
-            'subset', D.isError==0 & ismember(D.BN, 16));
+            'subset', D.dummy==0 & D.isError==0 & ismember(D.BN, 16));
         ET = ((T2.ETswc-T2.ETrep)./T2.ET)*100;
         [T.t4,T.p4]=ttest(ET, 0, 2, 'onesample');
         
@@ -819,7 +821,7 @@ switch (what)
             {D.RT, 'nanmedian', 'name', 'RTrep', 'subset',D.isRep==1}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.RT, 'nanmedian', 'name', 'RT'}, ...
-            'subset', D.isError==0);
+            'subset', D.dummy==0 & D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
@@ -868,7 +870,7 @@ switch (what)
         T = tapply(D, {'SN', 'day', 'sff'}, ...
             {D.ET, 'nanmedian', 'name', 'ET'}, ...
             {D.RT, 'nanmedian', 'name', 'RT'}, ...
-            'subset', D.isError==0);
+            'subset', D.dummy==0 & D.isError==0);
         
         %-------------------------------------------------------------------------------------------------------------------------------------
         % normalize MT data to remove between-subject variability (i.e. plot within-subject standard error)
@@ -899,6 +901,104 @@ switch (what)
         %ttest(T.RT(T.isRep==0), T.RT(T.isRep==1), 2, 'paired');
         
         %-------------------------------------------------------------------------------------------------------------------------------------
+        % out
+        D.T=T; %incorporate the sub-structures as fields of main structure
+        varargout={D}; %return main structure
+        
+    case 'repEff_IPI' % analysis of repetition effect, separately for different IPIs
+        if nargin>1 % load single subj data
+            subj = varargin{1};
+            D = load( fullfile(pathToData, sprintf('sr1_%s.mat', subj)));
+        else % load group data
+            D = load( fullfile(pathToAnalyze, 'sr1_all_data.mat'));
+        end
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        % select repetitions of interest
+        if numel(rs)>1; D = getrow(D, ismember(D.repNum, rs)); end
+        
+        % add IPI info
+        D.IPI=diff([D.pressTime1,D.pressTime2,D.pressTime3,D.pressTime4],1,2);
+        D.IPI_1=D.IPI(:,1); D.IPI_2=D.IPI(:,2); D.IPI_3=D.IPI(:,3);
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        % create summary table for IPI profile
+        T=tapply(D, {'SN', 'isRep', 'day'},...
+            {D.IPI_1, 'nanmedian','name','IPI_1'},...
+            {D.IPI_2, 'nanmedian','name','IPI_2'},...
+            {D.IPI_3, 'nanmedian','name','IPI_3'},...
+            'subset', D.dummy==0 & D.isError==0);
+        
+        for i = 1:size(D.IPI, 2)
+            T.IPI(:,i) = eval( sprintf('T.IPI_%d', i));
+            T = rmfield(T,sprintf('IPI_%d', i));
+            T.IPInum(:,i) = ones(size(T.SN, 1), 1) * i;
+            T.SN(:,i) = T.SN(:,1);
+            T.isRep(:,i) = T.isRep(:,1);
+            T.day(:,i) = T.day(:,1);
+        end
+        T.IPI = reshape(T.IPI, size(T.IPI, 1) * size(T.IPI, 2), 1);
+        T.IPInum = reshape(T.IPInum, size(T.IPInum, 1) * size(T.IPInum, 2), 1);
+        T.SN = reshape(T.SN, size(T.SN, 1) * size(T.SN, 2), 1);
+        T.isRep = reshape(T.isRep, size(T.isRep, 1) * size(T.isRep, 2), 1);
+        T.day = reshape(T.day, size(T.day, 1) * size(T.day, 2), 1);
+        
+        % normalize IPI data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'IPI'}, 'sub');
+        
+        % open figure
+        if nargin>1; figure('Name',sprintf('IPI analysis - subj %02d',str2double(varargin{1}(2:3)))); else; figure('Name',sprintf('IPI analysis - group (N=%d)',ns)); end
+        set(gcf, 'Units','normalized', 'Position',[0.1,0.1,0.8,0.8], 'Resize','off', 'Renderer','painters');
+        
+        subplot(2,2,1:2); title(''); hold on;
+        plt.line([T.day T.IPInum], T.normIPI, 'split',T.isRep, 'errorbars','shade','style',isrepsty, 'leg',isrepleg);
+        xlabel('Transition number'); ylabel('Inter press interval (ms)'); set(gca,'fontsize',fs);
+        ylim([100, 200]);
+        axis square;
+        
+        % stats
+        %ttest(T.IPI(T.IPInum==1 & T.isRep==0), T.IPI(T.IPInum==1 & T.isRep==1), 2, 'paired');
+        
+        %-------------------------------------------------------------------------------------------------------------------------------------
+        % create summary table for IPI profile
+        T=tapply(D, {'SN', 'isRep', 'BN'},...
+            {D.IPI_1, 'nanmedian','name','IPI_1'},...
+            {D.IPI_2, 'nanmedian','name','IPI_2'},...
+            {D.IPI_3, 'nanmedian','name','IPI_3'},...
+            'subset', D.dummy==0 & D.isError==0);
+        
+        for i = 1:size(D.IPI, 2)
+            T.IPI(:,i) = eval( sprintf('T.IPI_%d', i));
+            T = rmfield(T,sprintf('IPI_%d', i));
+            T.IPInum(:,i) = ones(size(T.SN, 1), 1) * i;
+            T.SN(:,i) = T.SN(:,1);
+            T.isRep(:,i) = T.isRep(:,1);
+            T.BN(:,i) = T.BN(:,1);
+        end
+        T.IPI = reshape(T.IPI, size(T.IPI, 1) * size(T.IPI, 2), 1);
+        T.IPInum = reshape(T.IPInum, size(T.IPInum, 1) * size(T.IPInum, 2), 1);
+        T.SN = reshape(T.SN, size(T.SN, 1) * size(T.SN, 2), 1);
+        T.isRep = reshape(T.isRep, size(T.isRep, 1) * size(T.isRep, 2), 1);
+        T.BN = reshape(T.BN, size(T.BN, 1) * size(T.BN, 2), 1);
+              
+        % normalize IPI data to remove between-subject variability (i.e. plot within-subject standard error)
+        T = normData(T, {'IPI'}, 'sub');
+        
+        subplot(2,2,3); title(''); hold on;
+        plt.line([T.BN T.IPInum], T.normIPI, 'split',[T.isRep], 'errorbars','shade','style',isrepsty, 'leg',isrepleg, 'subset',T.BN<13);
+        xlabel('Transition number'); ylabel('Inter press interval (ms)'); set(gca,'fontsize',fs);
+        ylim([90, 300]);
+        %axis square;
+        
+        subplot(2,2,4); title(''); hold on;
+        plt.line([T.BN T.IPInum], T.normIPI, 'split',[T.isRep], 'errorbars','shade','style',isrepsty, 'leg',isrepleg, 'subset',T.BN>12);
+        xlabel('Transition number'); ylabel('Inter press interval (ms)'); set(gca,'fontsize',fs);
+        ylim([90, 300]);
+        %axis square;
+                
+        % stats
+        %ttest(T.IPI(T.IPInum==1 & T.isRep==0), T.IPI(T.IPInum==1 & T.isRep==1), 2, 'paired');
+        
         % out
         D.T=T; %incorporate the sub-structures as fields of main structure
         varargout={D}; %return main structure
