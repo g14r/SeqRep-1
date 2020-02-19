@@ -184,6 +184,21 @@ switch (what)
                         error('This transition does not fall into any of the defined categories!');
                     end
                 end
+                
+                %                 %-------------------------------------------------------------------------------------------------------------------------------------
+                %                 % check that repetitions haven't been preceded by an error
+                %                 rn = 0;
+                %                 for t = 2:numel(T.sft)
+                %                     if T.seqNum(t)==T.seqNum(t-1) && T.isError(t-1)==0
+                %                         rn = rn + 1;
+                %                         T.isRep(t) = 1;
+                %                     else
+                %                         rn = 0;
+                %                         T.isRep(t) = 0;
+                %                     end
+                %                     T.repNum(t) = rn;
+                %                 end
+                
                 B = addstruct(B, T);
             end
             
